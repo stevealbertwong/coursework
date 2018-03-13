@@ -12,6 +12,11 @@ g++ -o sally main.cpp sally.cpp
 g++ -c main.cpp sally.cpp
 g++ -o sally main.o sally.o
 
+// 1. inherit all exception class's public n protected method and variables 
+// 2. only need to include parent class header file to include class prototype 
+// 3. parent constructor not inherited but will run
+// 4. protected is set by parent class only for inheritance
+
 */
 
 
