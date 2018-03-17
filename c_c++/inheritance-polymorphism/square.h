@@ -12,6 +12,7 @@ derived/sub/children class
 class Square: public Shape{
 	public:
 		int area();
+		void setColor(string c);
 };
 
 #endif

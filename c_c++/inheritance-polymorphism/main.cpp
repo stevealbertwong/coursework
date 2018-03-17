@@ -29,6 +29,12 @@ int main()
 	cout << "new area changed by parent class pointer: " << sq.area() << endl;
 	// cout << "this gives error: parent does not have child's area()" << sh->area() << endl;
 
+	sh->setName();
+	cout << sh->name << endl;
+
+	// virtual in parent overriden in children
+	sh->setColor("blue");
+	cout << sh->color << endl;
 }
 
 
