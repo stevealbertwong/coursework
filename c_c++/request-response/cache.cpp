@@ -1,65 +1,73 @@
+#include <string> 
 #include <iostream>
 #include "cache.h"
 
+
+
+static const string cacheDirectory = "cachedir";
 HttpCache::HttpCache(){
 	// ensureDirectoryExists();
+	char buffer[1000];
+	char *answer = getcwd(buffer, sizeof(buffer));	
+	cwd = string(answer);
+	cd = cwd + "/" + cacheDirectory;
+	cout << "create cache dir" << cd << endl;
+	createCacheDirectory(cd);
 }
 
-/* create dir to save cache */
 //https://techoverflow.net/2013/04/05/how-to-use-mkdir-from-sysstat-h/
-// static const int kDefaultPermissions = 644;
 static const int kDefaultPermissions = 0777; // rwxrwxrwx 
-void HttpCache::ensureDirectoryExists(const string& directory, bool empty) const {
-  struct stat st;
-  if (lstat(directory.c_str(), &st) != 0)
-    mkdir(directory.c_str(), kDefaultPermissions);
-  
-  if (!empty) return;
-
+void HttpCache::createCacheDirectory(const string& directory, bool empty) const {  
+  // if dir not exist, creates new one
+  struct stat st;  
+  if (lstat(directory.c_str(), &st) != 0){
+  	mkdir(directory.c_str(), kDefaultPermissions);
+  }
+    
+  // if empty flag, delete cache dir files
+  if (!empty) return;  
   DIR *dir = opendir(directory.c_str());
-
-  /* struct dirent
-  file system independent directory entry/ format of directory entries
-  Different file system types may have different directory entries 
-  dirent structure defines a file system independent directory entry, 
-  which contains information common to directory entries in different file system types
-  */
   int return_code;
   struct dirent entry;
-  struct dirent *result; 
-  
-  // loop through entries/file in directory
+  struct dirent *result;    
   for (return_code = readdir_r(dir, &entry, &result); 
         result != NULL && return_code == 0; 
         return_code = readdir_r(dir, &entry, &result)) {
     
     string dirEntry = entry.d_name;
-    if (dirEntry != "." && dirEntry != "..") 
-      remove(dirEntry.c_str());
+    if (dirEntry != "." && dirEntry != ".."){
+    	// remove(dirEntry.c_str());
+    	cout << "delete cache" << endl;
+    }
+      
+    	
   }
-  
   closedir(dir);
 }
 
 
 /*
-loop through directory to ensure such cache file exist
+check hash directory inside cache directory + not empty + is dir
 https://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
 */
-bool HTTPCache::cacheEntryExists(const string& requestHash) const {
+bool HttpCache::ensureEntryExists(const string& request) const {
   
-  string path = cacheDirectory + "/" + requestHash;
-    
+  string requestHash = hashRequest(request);
+  // string path = cd + "/" + requestHash;    
+  string path = cd;
   struct stat st;
-  // lstat is improved version of stat that does symbolic links
+  
+  // check exist => lstat is improved version of stat that does symbolic links
   if (lstat(path.c_str(), &st) != 0) return false;
-  if (!S_ISDIR(st.st_mode)) return false;
+  cout << "pass 1" << endl;
+  // is directory
+  if (!S_ISDIR(st.st_mode)) return false; 
+  cout << "pass 2" << endl;
 
+  // check emptiness
   int return_code;  
   struct dirent entry;
-  struct dirent *result;
-  
-  
+  struct dirent *result;    
   DIR *dir = opendir(path.c_str());
   bool exists = false;
   /* Inspiration for this loop from IBM */
@@ -67,48 +75,52 @@ bool HTTPCache::cacheEntryExists(const string& requestHash) const {
         result != NULL && return_code == 0; 
         return_code = readdir_r(dir, &entry, &result)) {
     string dirEntry = entry.d_name;
-    exists = dirEntry != "." && dirEntry != "..";
+	
+    // exists = dirEntry != "." && dirEntry != "..";
+    exists = requestHash.compare(dirEntry) == 0;
   }
   closedir(dir);
+  
   return exists;
 }
 
-
-
-
-
-
-
-
 // TODO full directory path + hash 
-void HttpCache::cacheEntry(string request, string response){
+void HttpCache::saveCache(const string& request, const string& response) const {
 	// ios::out => opens file for writing
 	// ios::binary => data is read or written without translating new line characters to and from \r\n on the fly
 	// | => both => writing without translating
-	string cacheEntryName = "hihi";
-	ofstream outfile(cacheEntryName.c_str(), ios::out | ios::binary);
+
+	string requestHash = hashRequest(request);
+	string cacheEntryPath = cd + "/" + requestHash;
+	ofstream outfile(cacheEntryPath.c_str(), ios::out | ios::binary);
 	outfile << response << flush;
 }
 
-// given request + hashed to get full directory path + return false if not exist
-bool checkCache(const string request, string response) const {
-	// check if fullCacheEntryName exist
+// given request + hashed to get full directory path + false
+string HttpCache::retrieveCache(const string& request) const {
 
 	string requestHash = hashRequest(request);
-	string fullCacheEntryName = cacheDirectory + "/" requestHash;
-
-
-
-	ifstream instream(fullCacheEntryName.c_str(), ios::in | ios::binary);
-	string responseCodeLine;
-  	getline(instream, responseCodeLine);
-  	cout << responseCodeLine << endl;
-
+	string cacheEntryPath = cd + "/" + requestHash;
+	
+	ifstream instream(cacheEntryPath.c_str(), ios::in | ios::binary);	
+	string response;
+	// https://stackoverflow.com/questions/116038/what-is-the-best-way-to-read-an-entire-file-into-a-stdstring-in-c
+	// https://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring	
+	// http://cpp.indi.frih.net/blog/2014/09/how-to-read-an-entire-file-into-memory-in-cpp/
+	response = static_cast<stringstream const&>(stringstream() << instream.rdbuf()).str();
+						
+	// if(instream.eof()) break;  	
+  	return response;
 }
 
-
-
-
+string HttpCache::hashRequest(const string& request) const {
+  // std::size_t str_hash = std::hash<std::string>{}(request);
+  hash<string> hasher;
+  ostringstream oss;
+  size_t str_hash = hasher(request); 
+  oss << str_hash;
+  return oss.str();
+}
 
 
 

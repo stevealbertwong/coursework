@@ -1,12 +1,26 @@
 /*
-c++ -o test test.cpp
+c++ -std=c++11 -o test test.cpp
 */
 #include <iostream>
 #include <string>
 #include <stdlib.h>
 #include <fstream>
+#include <sstream>
 #include <dirent.h>
+// #include <boost/filesystem.hpp> // not installed yet
+#include <unistd.h>
 
+
+// // get cwd
+// #ifdef _WIN32
+//     #include <direct.h>
+//     #define getcwd _getcwd // stupid MSFT "deprecation" warning
+// #elif
+//     #include <unistd.h>
+// #endif
+
+
+// using boost::filesystem;
 using namespace std;
 
 int main(int argc, char const *argv[])
@@ -52,9 +66,39 @@ int main(int argc, char const *argv[])
     	// if (dirEntry != "." && dirEntry != "..") 
      	//  		remove(dirEntry.c_str()); // remove files
   	}
+
+  	const char *r = "GET http://www.google.com:80/index.html/ HTTP/1.0\r\nContent-Length:80\r\nIf-Modified-Since: Sat, 29 Oct 1994 19:43:31 GMT\r\n\r\n";
+	string request(r);
+  	hash<string> hasher;
+  	ostringstream oss;
+  	size_t str_hash = hasher(request); // ??
+  	oss << str_hash;
+  	cout << "hashed request: " << oss.str() << endl;
   	
+
   	
-  	
+  	// https://stackoverflow.com/questions/3935874/boostfilesystem-relative-path-and-current-directory
+	// boost::filesystem::path full_path(boost::filesystem::current_path());
+	// auto cwd = boost::filesystem::current_path();
+	// auto cwd = std::filesystem::current_path(); // c++17
+	// std::cout << "Current path is : " << cwd << std::endl;
+
+
+
+	char buffer[1000];
+	char *answer = getcwd(buffer, sizeof(buffer));
+	cout << answer << endl;
+	string s_cwd;
+	s_cwd = string(answer);
+	cout << s_cwd << endl;
+	// if (answer)
+	// {
+	//     s_cwd = answer;
+	// }
+
+
+
+
   	// cout << path << endl;
   	// strcpy(path + length, "/"); // add / at the end of path
   	// cout << path << endl;

@@ -30,6 +30,7 @@ g++ -std=c++11 -o main main.cpp httpheaders.cpp httpresponse.cpp cache.cpp
 #include "httpresponse.h"
 #include "cache.h"
 
+
 using namespace std;
 
 int main(int argc, char const *argv[])
@@ -44,24 +45,20 @@ int main(int argc, char const *argv[])
 	string request(r);
 
 
-	HttpResponse httpresponse;
-	httpresponse.ParseResponse(response);
-
-	//TODO: filestream operation to save n retrieve in hashed directory
-
-	// ios::out => opens file for writing
-	// ios::binary => data is read or written without translating new line characters to and from \r\n on the fly
-	// | => both => writing without translating
-	string cacheEntryName = "hihi";
-	ofstream outfile(cacheEntryName.c_str(), ios::out | ios::binary);
-	outfile << response << flush;
-	// outfile.flush(); // same as << flush
-
-	// look for such file
-	// stat vs lstat
-	string cacheDirectoryName = "cacheddir";
+	// HttpResponse httpresponse;
+	// httpresponse.ParseResponse(response);
+	
 	HttpCache httpcache;
-	httpcache.ensureDirectoryExists(cacheDirectoryName);
+	httpcache.saveCache(request, response);
+
+	cout << httpcache.ensureEntryExists(request) << endl;
+
+	if(httpcache.ensureEntryExists(request)){
+		string re_response = httpcache.retrieveCache(request);
+		cout << re_response << endl;
+	}
+	
+	
 
 
 	// string version;

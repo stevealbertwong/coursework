@@ -4,7 +4,9 @@
 #include <sys/stat.h> // lstat()
 #include <dirent.h> // opendir(), readdir_r()
 #include <string>
- #include <stdio.h> // getline()
+#include <stdio.h> // getline()
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -13,16 +15,16 @@ public:
 	HttpCache();
 	// 1st const reference parameter: ensure orignal parameter passed wont get amended, if pass by value(copy) changed should not matter
 	// 2nd const function: function wont change any class variable but ok local variable of function + cannot call non-const function even if such non-const function does not change class variable
-	void ensureDirectoryExists(const string& directory, bool empty = false) const; 
-	void ensureFileExists(const string& directory, bool empty = false) const; 
+	void createCacheDirectory(const string& directory, bool empty = false) const; 
+	bool ensureEntryExists(const string& request) const; 
 
-	void cacheEntry(string request, string response);
-
-
-	bool checkCache(string request);
-	string returnCache();
-	
-
+	void saveCache(const string& request, const string& response) const;
+	string retrieveCache(const string& request) const;
+	string hashRequest(const string& request) const;
+		
+private:
+	string cwd;
+	string cd;
 
 };
 
