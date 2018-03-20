@@ -171,6 +171,8 @@ void respondToClient(int sockfd)
         // cout << "Key: " << key << " Value: " << value << endl;
     }
 
+    
+    // CACHING i.e. when there is resources
     // forming response headers
     string response;
     string content;

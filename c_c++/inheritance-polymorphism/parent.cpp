@@ -3,19 +3,17 @@ base/super/parent class
 
 */
 
-#include "shape.h"
+#include "parent.h"
 
-void Shape::setValues(int a, int b){
+void Parent::setParentProtectedVariable(int a, int b){
 	height = a;
 	width = b;	
 }
 
-
-void Shape::setColor(string c){	
+void Parent::setParentPublicVariable(string c){	
 	color = "green"; // default green if not overriden by subclass
 }
 
-
-void Shape::setName(){	
+void Parent::setName(){	
 	name = "steven wong"; // default green if not overriden by subclass
 }

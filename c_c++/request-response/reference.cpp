@@ -133,3 +133,168 @@ HttpRequest::ParseRequest (const char *buffer, size_t size)
   curPos = endline + 2;
   return ParseHeaders (curPos, size - (curPos-buffer));
 }
+
+
+
+
+/*
+very clean version
+
+*/
+#ifndef _http_request_h_
+#define _http_request_h_
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+
+
+class HTTPRequest {
+
+  public:
+
+    const std::string& getMethod() const { return method; }
+    const std::string& getURL() const { return url; }
+    const std::string& getServer() const { return server; }
+    unsigned short getPort() const { return port; }
+    const std::string& getPath() const { return path; }
+    const std::string& getProtocol() const { return protocol; }
+
+    void parseRequestLine(string request_string);
+    
+
+
+  private:
+    std::string requestLine;
+    // all request fields of dicts other than 1st line e.g. User-Agent: Mozilla/5.0
+    
+    // cleaned up n parsed version of 1st request line
+    std::string method;
+    std::string url;
+    std::string version; 
+    
+    std::string server; 
+    unsigned short port;
+    std::string path;
+    std::string protocol;
+
+    std::unordered_map<std::string, std::string> headers;
+    
+};
+
+#endif
+
+#include "httprequest.h"
+
+void HTTPRequest::parseRequestLine(string& request){
+    size_t start = 0;
+    size_t end = 0;
+
+    // parse request line: Get method, URI, and version info
+    end = request.find(' ', start);
+    if (end == string::npos)
+        return 0;
+    method = request.substr(start, end - start);
+    start = end + 1;
+    end = request.find(' ', start);
+    if (end == string::npos)
+        return 0;
+    uri = request.substr(start, end - start);
+    start = end + 1;
+    end = request.find("\r\n", start);
+    if (end == string::npos)
+        return 0;
+    version = request.substr(start, end - start);
+    start = end + 2;
+
+    cout << "Method: " << method << endl;
+    cout << "URI: " << uri << endl;
+    cout << "Version: " << version << endl;
+
+    
+    // parse headers
+    while (true)
+    {
+        string key, value;
+
+        end = request.find(": ", start);
+        if (end == string::npos)
+            break;
+        key = request.substr(start, end - start);
+        start = end + 2;
+        end = request.find("\r\n", start);
+        if (end == string::npos)
+            break;
+        value = request.substr(start, end - start);
+        start = end + 2;
+
+        cout << "Key: " << key << " Value: " << value << endl;
+        headers[key] = value;
+
+    }
+    // Iterate over an unordered_map using range based for loop
+    for (pair<std::string, std::string> element : headers)
+    {
+        std::cout << element.first << " : " << element.second << std::endl;
+    }
+}
+
+
+/*
+
+https://stackoverflow.com/questions/25896916/parse-http-headers-in-c
+*/
+void HTTPRequest::parseResponse(string& response){
+    size_t start = 0;
+    size_t end = 0;
+
+    // parse response line: Get method, URI, and version info
+    end = response.find(' ', start);
+    if (end == string::npos)
+        return 0;
+    version = response.substr(start, end - start);
+    start = end + 1;
+    end = response.find(' ', start);
+    if (end == string::npos)
+        return 0;
+    status = response.substr(start, end - start);
+    start = end + 1;
+    end = response.find("\r\n", start);
+    if (end == string::npos)
+        return 0;
+    status_line = response.substr(start, end - start);
+    start = end + 2;
+
+    cout << "Http version: " << version << endl;
+    cout << "status: " << status << endl;
+    cout << "status_line: " << status_line << endl;
+
+    
+    // parse headers
+    while (true)
+    {
+        string key, value;
+
+        end = request.find(": ", start);
+        if (end == string::npos)
+            break;
+        key = request.substr(start, end - start);
+        start = end + 2;
+        end = request.find("\r\n", start);
+        if (end == string::npos)
+            break;
+        value = request.substr(start, end - start);
+        start = end + 2;
+
+        cout << "Key: " << key << " Value: " << value << endl;
+        headers[key] = value;
+
+    }
+    // Iterate over an unordered_map using range based for loop
+    for (pair<std::string, std::string> element : headers)
+    {
+        std::cout << element.first << " : " << element.second << std::endl;
+    }
+}
+
