@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<!-- saved from url=(0059)http://jakascorner.com/blog/2016/03/return-type-part-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Return type - Part 1</title>
+  <meta name="description" content="Templates in C++ allows us to write generic concurrent programs. It is notunusual to have a template argument which represent a function. For example">
+
+  <link rel="stylesheet" href="./Return type - Part 1_files/main.css">
+  <link rel="canonical" href="http://jakascorner.com/blog/2016/03/return-type-part-1.html">
+  <link rel="alternate" type="application/rss+xml" title="Jaka&#39;s Corner" href="http://jakascorner.com/feed.xml">
+</head>
+
+
+  <body>
+    
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="http://jakascorner.com/">
+        Jaka's Corner 
+    </a>
+    
+    <nav class="site-nav">
+      <a href="http://jakascorner.com/blog/2016/03/return-type-part-1.html#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"></path>x1
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"></path>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"></path>
+        </svg>
+      </a>
+
+      <div class="trigger">
+
+        <a class="page-link" href="http://jakascorner.com/blog/">Blog</a>
+        <a class="page-link" href="http://jakascorner.com/academics/">Academics</a>
+        <a class="page-link" href="http://jakascorner.com/software/">Software</a>
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Return type - Part 1</h1>
+    <p class="post-meta">Mar 28, 2016</p>
+  </header>
+
+  <article class="post-content">
+    <p>Templates in C++ allows us to write generic concurrent programs. It is not
+unusual to have a template argument which represent a function. For example</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Fun</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">function</span><span class="p">(</span><span class="n">Fun</span> <span class="n">f</span><span class="p">,</span> <span class="p">...)</span></code></pre></figure>
+
+<p>the <code class="highlighter-rouge">function</code>’s argument is a function
+<code class="highlighter-rouge">f</code> of type <code class="highlighter-rouge">Fun</code>.</p>
+
+<p>If we use functions as template arguments, then we don’t know what is the return
+type of the function. (For example, we don’t know the return type of
+<code class="highlighter-rouge">f</code>.) There are some cases, when we would need to know the
+return type of a function. For example, making a future with
+<code class="highlighter-rouge">std::async</code> requires such knowledge.</p>
+
+<p>Fortunately there exist a solution for this problem. The solution is 
+<code class="highlighter-rouge">std::result_of</code>. This class can figure out what is the return
+type of the function at the compile time.</p>
+
+<h2 id="stdresultof">std::result_of</h2>
+
+<p>Let’s look at an example</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Fun</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">checkType</span><span class="p">(</span><span class="n">Fun</span> <span class="n">f</span><span class="p">,</span> <span class="n">Args</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">using</span> <span class="n">return_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">std</span><span class="o">::</span><span class="n">result_of</span><span class="o">&lt;</span> <span class="n">Fun</span><span class="p">(</span><span class="n">Args</span><span class="p">...)</span> <span class="o">&gt;::</span><span class="n">type</span><span class="p">;</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"int:    "</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">is_same</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">return_t</span><span class="o">&gt;::</span><span class="n">value</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"double: "</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">is_same</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">return_t</span><span class="o">&gt;::</span><span class="n">value</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"float:  "</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">is_same</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">return_t</span><span class="o">&gt;::</span><span class="n">value</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>The <code class="highlighter-rouge">checkType</code> accepts two arguments. First one is a function
+<code class="highlighter-rouge">f</code> of type <code class="highlighter-rouge">Fun</code> and the second one
+represents variadic number of arguments. The assumption is that 
+<code class="highlighter-rouge">args</code> are the arguments of <code class="highlighter-rouge">f</code>. If you are
+not familiar with functions, which have variadic number of arguments, look at
+<a href="http://jakascorner.com/blog/2016/03/variadic-number-of-arguments.html">Variadic number of arguments</a>.</p>
+
+<p>The next line</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="k">using</span> <span class="n">return_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">std</span><span class="o">::</span><span class="n">result_of</span><span class="o">&lt;</span> <span class="n">Fun</span><span class="p">(</span><span class="n">Args</span><span class="p">...)</span> <span class="o">&gt;::</span><span class="n">type</span><span class="p">;</span></code></pre></figure>
+
+<p>determines the return type of <code class="highlighter-rouge">f</code>. This is done with
+<code class="highlighter-rouge">std::result_of</code>. The template parameter of
+<code class="highlighter-rouge">std::result_of</code> must be a signature of a function. Then, the
+<code class="highlighter-rouge">std::result_of&lt; &gt;::type</code> represents the return type of the
+function, which is determined by the signature. The deduced
+return type is stored in <code class="highlighter-rouge">return_t</code>.</p>
+
+<p>In the next lines, the program prints information about
+<code class="highlighter-rouge">return_t</code>. The statement</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="n">std</span><span class="o">::</span><span class="n">is_same</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">U</span><span class="o">&gt;::</span><span class="n">value</span></code></pre></figure>
+
+<p>is equal to <code class="highlighter-rouge">true</code> if <code class="highlighter-rouge">T</code> and
+<code class="highlighter-rouge">U</code> are the same type. Otherwise, the statement is
+<code class="highlighter-rouge">false</code>.</p>
+
+<p>Using <code class="highlighter-rouge">std::is_same&lt; &gt;</code>, the program checks if the
+<code class="highlighter-rouge">return_t</code> is equal to <code class="highlighter-rouge">int</code> or
+<code class="highlighter-rouge">double</code> or <code class="highlighter-rouge">float</code>.</p>
+
+<h1 id="examples">Examples</h1>
+
+<p>Let’s look at the behavior of the function <code class="highlighter-rouge">checkType</code>.</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="kt">int</span> <span class="nf">fun1</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">double</span> <span class="nf">fun2</span><span class="p">(</span><span class="kt">double</span> <span class="n">d</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">d</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">fun3</span><span class="p">(</span><span class="kt">int</span> <span class="n">i1</span><span class="p">,</span> <span class="kt">int</span> <span class="n">i2</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">i1</span> <span class="o">+</span> <span class="n">i2</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">d</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Function1: "</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">checkType</span><span class="p">(</span><span class="n">fun1</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Function2: "</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">checkType</span><span class="p">(</span><span class="n">fun2</span><span class="p">,</span> <span class="n">d</span><span class="p">);</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Function3: "</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">checkType</span><span class="p">(</span><span class="n">fun3</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>We have three functions <code class="highlighter-rouge">fun1</code>, <code class="highlighter-rouge">fun2</code> and
+<code class="highlighter-rouge">fun3</code>, which return <code class="highlighter-rouge">int</code>,
+<code class="highlighter-rouge">double</code> and <code class="highlighter-rouge">float</code>, respectively. In
+<code class="highlighter-rouge">main</code> function, <code class="highlighter-rouge">checkType</code> prints
+information about the return types of <code class="highlighter-rouge">fun1</code>,
+<code class="highlighter-rouge">fun2</code> and <code class="highlighter-rouge">fun3</code> using
+<code class="highlighter-rouge">std::result_of&lt; &gt;</code>.</p>
+
+<p>The output of the program is:</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="nl">Function1:</span> 
+<span class="kt">int</span><span class="o">:</span>    <span class="mi">1</span>
+<span class="kt">double</span><span class="o">:</span> <span class="mi">0</span>
+<span class="kt">float</span><span class="o">:</span>  <span class="mi">0</span>
+
+<span class="n">Function2</span><span class="o">:</span> 
+<span class="kt">int</span><span class="o">:</span>    <span class="mi">0</span>
+<span class="kt">double</span><span class="o">:</span> <span class="mi">1</span>
+<span class="kt">float</span><span class="o">:</span>  <span class="mi">0</span>
+
+<span class="n">Function3</span><span class="o">:</span> 
+<span class="kt">int</span><span class="o">:</span>    <span class="mi">0</span>
+<span class="kt">double</span><span class="o">:</span> <span class="mi">0</span>
+<span class="kt">float</span><span class="o">:</span>  <span class="mi">1</span></code></pre></figure>
+
+<h2 id="summary">Summary</h2>
+
+<p>We learned how to deduce the return type of a function with
+<code class="highlighter-rouge">std::result_of&lt;&gt;</code>.</p>
+
+<p>Links:</p>
+
+<ul>
+  <li><a href="https://github.com/jakaspeh/concurrency/blob/master/resultOfPart1.cpp">Source code</a></li>
+  <li><a href="http://jakascorner.com/blog/2016/03/variadic-number-of-arguments.html">Functions with variadic number of arguments</a></li>
+  <li><a href="http://en.cppreference.com/w/cpp/types/result_of">std::result_of</a></li>
+  <li><a href="http://en.cppreference.com/w/cpp/types/is_same">std::is_same</a></li>
+</ul>
+
+  </article>
+
+  <div id="post-nav" class="clearfix">
+   
+    <a style="float:left" class="prev" href="http://jakascorner.com/blog/2016/03/variadic-number-of-arguments.html">
+      « Previous post
+    </a> 
+   
+   
+    <a style="float:right" class="next" href="http://jakascorner.com/blog/2016/04/return-type-part-2.html">
+      Next post »
+    </a> 
+   
+</div>
+  
+</div>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+        © Jaka's Corner
+      </div>
+
+      <div class="footer-col  footer-col-2">
+      </div>
+
+      <div class="footer-col  footer-col-3">
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    
+    <script async="" src="./Return type - Part 1_files/analytics.js"></script><script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-71638626-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    
+  
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Return type - Part 1_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}" style="display: none;"></div><script id="wappalyzer" src="chrome-extension://gppongmhjkpfnbhagpmjfkannfbllamg/js/inject.js"></script></body></html>

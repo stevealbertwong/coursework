@@ -2,6 +2,7 @@
 #define _HTTP_RESPONSE_H_
 
 #include <iostream>
+#include <string>
 #include "httpheaders.h"
 
 // inheritance allows you to call httpresponse.ParseHeader() in main
@@ -10,9 +11,10 @@
 class HttpResponse : public HttpHeaders{
 public:
 	HttpResponse();
-	void ParseResponse(string& response);
-	// EngineerResponse();
-
+	void parseResponse(const string& response);
+	
+	// TODO: 
+	// engineerResponse();
 	// getVersion();
 	// getStatus();
 	// getStatusLine();

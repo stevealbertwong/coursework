@@ -1,8 +1,4 @@
-#include <string> 
-#include <iostream>
 #include "cache.h"
-
-
 
 static const string cacheDirectory = "cachedir";
 HttpCache::HttpCache(){
@@ -10,8 +6,7 @@ HttpCache::HttpCache(){
 	char buffer[1000];
 	char *answer = getcwd(buffer, sizeof(buffer));	
 	cwd = string(answer);
-	cd = cwd + "/" + cacheDirectory;
-	cout << "create cache dir" << cd << endl;
+	cd = cwd + "/" + cacheDirectory;	
 	createCacheDirectory(cd);
 }
 
@@ -38,9 +33,7 @@ void HttpCache::createCacheDirectory(const string& directory, bool empty) const 
     if (dirEntry != "." && dirEntry != ".."){
     	// remove(dirEntry.c_str());
     	cout << "delete cache" << endl;
-    }
-      
-    	
+    }          	
   }
   closedir(dir);
 }
@@ -59,18 +52,16 @@ bool HttpCache::ensureEntryExists(const string& request) const {
   
   // check exist => lstat is improved version of stat that does symbolic links
   if (lstat(path.c_str(), &st) != 0) return false;
-  cout << "pass 1" << endl;
+  
   // is directory
   if (!S_ISDIR(st.st_mode)) return false; 
-  cout << "pass 2" << endl;
-
+  
   // check emptiness
   int return_code;  
   struct dirent entry;
   struct dirent *result;    
   DIR *dir = opendir(path.c_str());
-  bool exists = false;
-  /* Inspiration for this loop from IBM */
+  bool exists = false;  
   for (return_code = readdir_r(dir, &entry, &result); 
         result != NULL && return_code == 0; 
         return_code = readdir_r(dir, &entry, &result)) {
@@ -96,7 +87,7 @@ void HttpCache::saveCache(const string& request, const string& response) const {
 	outfile << response << flush;
 }
 
-// given request + hashed to get full directory path + false
+// given request + hashed to get full directory path + return response
 string HttpCache::retrieveCache(const string& request) const {
 
 	string requestHash = hashRequest(request);
@@ -110,7 +101,7 @@ string HttpCache::retrieveCache(const string& request) const {
 	response = static_cast<stringstream const&>(stringstream() << instream.rdbuf()).str();
 						
 	// if(instream.eof()) break;  	
-  	return response;
+  return response;
 }
 
 string HttpCache::hashRequest(const string& request) const {

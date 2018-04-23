@@ -6,22 +6,26 @@
 #include <stdio.h> // size_t
 #include <iostream>
 
+
 using namespace std;
 
 class HttpHeaders{
 public:
   HttpHeaders();
-  void ParseHeaders(string& request);
-  // size_t GetTotalHeaders();
+  void parseHeaders(const string& request);  
+  const string& findHeaders(const string& key) const;
+  bool containsHeaders(const string& key) const ;
+  void addHeaders(const string& key, const int& value);
+  void addHeaders(const string& key, const string& value);
+  
+  void removeHeaders(const string& key);
+  
+  // TODO:
+  // size_t getTotalHeaders();
+  // ModifyHeaders();  
+  // engineerHeaders();
+  // unordered_map<string, string> getHeaders();
 
-  // FindHeaders();
-  // AddHeaders();
-  // RemoveHeaders();
-  // ModifyHeaders();
-
-  // EngineerHeaders();
-
-  // unordered_map<string, string> GetHeaders();
   size_t getStart() const {return start;}
   size_t getEnd() const {return end;}
 
@@ -35,7 +39,6 @@ protected:
 // only httpheader class could access
 private:
   unordered_map<string, string> headers;
-
 };
 
 

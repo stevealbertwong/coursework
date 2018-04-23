@@ -2,7 +2,7 @@
 
 HttpResponse::HttpResponse(){}
 
-void HttpResponse::ParseResponse(string& response){
+void HttpResponse::parseResponse(const string& response){
 
     start = getStart();
     end = getEnd();
@@ -28,6 +28,7 @@ void HttpResponse::ParseResponse(string& response){
     cout << "status: " << status << endl;
     cout << "status_line: " << status_line << endl;
 
-  return HttpHeaders::ParseHeaders(response);
+  return HttpHeaders::parseHeaders(response);
   // return ParsedHeader();
 }
+

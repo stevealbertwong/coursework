@@ -7,6 +7,7 @@
 #include <stdio.h> // getline()
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -23,8 +24,8 @@ public:
 	string hashRequest(const string& request) const;
 		
 private:
-	string cwd;
-	string cd;
+	string cwd; // current working dir
+	string cd; // cache directory
 
 };
 

@@ -4,7 +4,7 @@ g++ -std=c++11 -o main main.cpp
 
 g++ -std=c++11 -o main main.cpp httprequest.cpp httpheaders.cpp httpresponse.cpp compat.cpp
 
-g++ -std=c++11 -o main main.cpp httpheaders.cpp httpresponse.cpp cache.cpp
+g++ -std=c++11 -o main main.cpp httpheaders.cpp httprequest.cpp httpresponse.cpp cache.cpp
 
 */
 #include <iostream>
@@ -45,9 +45,12 @@ int main(int argc, char const *argv[])
 	string request(r);
 
 
-	// HttpResponse httpresponse;
-	// httpresponse.ParseResponse(response);
-	
+	HttpResponse httpresponse;
+	httpresponse.parseResponse(response);
+
+	HttpRequest httprequest;
+	httprequest.parseRequest(request);
+
 	HttpCache httpcache;
 	httpcache.saveCache(request, response);
 
@@ -57,38 +60,12 @@ int main(int argc, char const *argv[])
 		string re_response = httpcache.retrieveCache(request);
 		cout << re_response << endl;
 	}
+
 	
 	
+	
 
 
-	// string version;
-	// string status;
-	// string status_line;
-	// size_t start = 0;
- //    size_t end = 0;
-
- //    std::unordered_map<std::string, std::string> headers;
-
- //    // parse response line: Get method, URI, and version info
- //    end = response.find(' ', start);
- //    if (end == string::npos)
- //        return 0;
- //    version = response.substr(start, end - start);
- //    start = end + 1;
- //    end = response.find(' ', start);
- //    if (end == string::npos)
- //        return 0;
- //    status = response.substr(start, end - start);
- //    start = end + 1;
- //    end = response.find("\r\n", start);
- //    if (end == string::npos)
- //        return 0;
- //    status_line = response.substr(start, end - start);
- //    start = end + 2;
-
- //    cout << "Http version: " << version << endl;
- //    cout << "status: " << status << endl;
- //    cout << "status_line: " << status_line << endl;
 
 
  //    // parse headers
