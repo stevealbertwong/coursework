@@ -4,6 +4,8 @@ https://www.youtube.com/watch?v=UTUdhjzws5g&t=6s
 lvalue: object that occupies identifiable location in memory (not register)
 rvalue: any object that is not lvalue
 
+http://www.bogotobogo.com/cplusplus/C11/4_C11_Rvalue_Lvalue.php
+
 */
 
 /*
@@ -62,6 +64,14 @@ int square(const int& x) {return x*x;} //both square(i) square(40) work
 
 /*
 https://www.youtube.com/watch?v=IOkgBrXCtfo
+
+
+packaged_task + thread
+e.g. std::thread t2 = move(t);
+
+http://www.bogotobogo.com/cplusplus/C11/5_C11_Move_Semantics_Rvalue_Reference.php
+move() takes an lvalue and converts it into an rvalue
+
 */
 
 class BoVector{

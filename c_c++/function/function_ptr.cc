@@ -10,6 +10,7 @@ g++ -std=c++11 function_ptr.cc -o function_ptr
 #include <iostream>
 using namespace std;
 
+// macro
 #define LOG(x) cout << x << endl;
 
 int Add(int a, int b){return a+b;}

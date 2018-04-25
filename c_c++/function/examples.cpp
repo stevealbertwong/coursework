@@ -5,6 +5,108 @@ https://www.youtube.com/watch?v=uk0Ytomv0wY&t=260s
 */
 
 
+/* packaged_task: http://thispointer.com/c11-multithreading-part-10-packaged_task-example-and-tutorial/
+ * Function Object to Fetch Data from DB
+
+ http://thispointer.com/c11-multithreading-part-9-stdasync-tutorial-example/
+
+ */
+struct DBDataFetcher
+{
+    std::string operator()(std::string token)
+    {
+        // Do some stuff to fetch the data
+        std::string data = "Data From " + token;
+        return data;
+    }
+};
+
+
+struct DataFetcher
+{
+    std::string operator()(std::string recvdData)
+    {
+        // Make sure that function takes 5 seconds to complete
+        std::this_thread::sleep_for (seconds(5));
+        //Do stuff like fetching Data File
+        return "File_" + recvdData;
+ 
+    }
+}; 
+//Calling std::async with function object
+std::future<std::string> fileResult = std::async(DataFetcher(), "Data");
+
+
+
+
+std::future<std::string> resultFromDB = std::async([](std::string recvdData){
+ 
+                        std::this_thread::sleep_for (seconds(5));
+                        //Do stuff like creating DB Connection and fetching Data
+                        return "DB_" + recvdData;
+ 
+                    }, "Data");
+
+
+
+/*
+https://stackoverflow.com/questions/22332181/passing-lambdas-to-stdthread-and-calling-class-methods
+*/
+
+auto functor = 
+   [this](const Cursor& c, size_t& result) ->void {result = classMethod(c);};
+size_t a;
+Cursor cursor = someCursor();
+std::thread t1([&] {a = classMethod(cursor);});
+// std::thread t1(functor, std::ref(cursor), std::ref(a)) // same
+t1.join();
+
+
+/*
+vitvit threadpool
+*/
+template<typename F, typename... Rest>
+auto push(F && f, Rest&&... rest) ->std::future<decltype(f(0, rest...))> {
+    auto pck = std::make_shared<std::packaged_task<decltype(f(0, rest...))(int)>>(
+        std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Rest>(rest)...)
+    );
+    // function wrap lambda ??
+    auto _f = new std::function<void(int id)>([pck](int id) {
+        (*pck)(id);
+    });
+    this->q.push(_f);
+
+    std::unique_lock<std::mutex> lock(this->mutex);
+    this->cv.notify_one();
+
+    return pck->get_future();
+}
+
+/* threadpool crytek
+*/
+void operator()() {
+  std::function<void()> func;
+  bool dequeued;
+  // class inside class's variables ??
+  while (!m_pool->m_shutdown) {
+    {
+      std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
+      if (m_pool->m_queue.empty()) {
+        m_pool->m_conditional_lock.wait(lock);
+      }
+      dequeued = m_pool->m_queue.dequeue(func);
+    }
+    if (dequeued) {
+      func();
+    }
+  }
+}
+
+
+
+
+
+
 // funcVar: function pointer, assign variable to a function with no name
 // []: capture list/closure, using existing outside variable inside function
 // (int a, int b): parameter list
