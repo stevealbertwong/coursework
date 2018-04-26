@@ -19,6 +19,10 @@ using class to initialize threads with semaphore
 functor
 	=> each thread is semaphored by function_queue.empty()
 
+MANY TODOs
+using wait() to join threads 
+	=> need to stop thread cv predicate and quit while true loop
+	=> use std::vector<std::thread> to store spawned threads and destructor to join()
 
 */
 #include "thread-pool2.h"
@@ -30,8 +34,10 @@ ThreadPool::ThreadPool(size_t numThreads) {
 
 	max_allowed_sema.reset(new semaphore(numThreads)); 	
 	tasks_sema.reset(new semaphore(0));
+	wait_sema.reset(new semaphore(0));
 
 	num_active_threads = 0;
+	tasks_done = 0;
 
 
 	for (size_t workerID = 0; workerID < numThreads; workerID++) {
@@ -47,13 +53,17 @@ ThreadPool::ThreadPool(size_t numThreads) {
 
 }
 
-void ThreadPool::enqueue(const std::function<void(void)>& thunk) {
-	
+// surgery code to join threads
+void ThreadPool::wait(){
+	wait_sema->wait();	
+}
+
+void ThreadPool::enqueue(const std::function<void(void)>& thunk) {	
+	tasks_done++;
 	tasks_lock.lock();
 	tasks.push(thunk);
 	tasks_lock.unlock();
-		 
-	// TODO: change this to notify_one()
+		 	
 	tasks_sema->signal();
 }
 
@@ -124,7 +134,12 @@ void ThreadPool::worker(size_t id) {
 		free_threads.push(id);
 		free_threads_lock.unlock();
 
-		max_allowed_sema->signal();									
+		max_allowed_sema->signal();	
+		
+		tasks_done--;
+		if(tasks_done == 0){
+			wait_sema->signal();
+		}
 	}
 }
 

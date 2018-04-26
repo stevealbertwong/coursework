@@ -20,7 +20,7 @@ class ThreadPool {
  public:
  	ThreadPool(size_t numThreads);
  	void enqueue(const std::function<void(void)>& thunk);
- 	// void wait();
+ 	void wait();
 	// ~ThreadPool();
  	
  private:
@@ -37,10 +37,11 @@ class ThreadPool {
 	mutex free_threads_lock;
 	
 	size_t num_active_threads; // single thread access
-	// TODO: all_finished
+	atomic<int> tasks_done;
 
  	unique_ptr<semaphore> max_allowed_sema;
  	unique_ptr<semaphore> tasks_sema;
+ 	unique_ptr<semaphore> wait_sema;
  	 	  	 	 
  	// for destructor to call join()
  	std::vector<std::thread> worker_threads;
