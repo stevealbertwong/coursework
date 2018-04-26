@@ -1,8 +1,10 @@
 /*
-worker thread (init())
-1. fake thread (i.e. vector of while(true) lambda)
-2. operator()
-3. init()
+from threadpool to understand using load balancing to scale server
+
+worker thread (operator())
+1. cv.wait() + predicate for each thread
+2. move + pop
+3. task()
 
 
 dispatcher thread (enqueue())
@@ -54,11 +56,11 @@ private:
     std::vector< std::thread > workers;
     std::queue< std::function<void()> > tasks;
 
-    // functor
+    // functor => web server logic e.g. memcached, DB access(replicate, partition, specialize)
     class ThreadWorker {
     private:
       int tid;      
-      ThreadPool * tpool; // nested class to access parent class's variable
+      ThreadPool * tpool; // nested class access same parent(reference) class's variable
     public:      
       ThreadWorker(ThreadPool * pool, const int id)
         : tpool(pool), tid(id) {}
@@ -76,11 +78,12 @@ private:
           }
           task();
           }
-        }   
+      }   
     };
 };
 
-inline void ThreadPool::init(){         
+inline void ThreadPool::init(){
+    // naive load balancing
     for (int i = 0; i < workers.size(); ++i) {        
       workers[i] = std::thread(ThreadPool::ThreadWorker(this, i));
     }

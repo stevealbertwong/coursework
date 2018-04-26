@@ -6,136 +6,94 @@ using class to initialize threads with semaphore
 
 1. optimize not spawning 10 threads right away
 	=> data structure to check finished threads
-	=> dispatcher() + worker() spawn n monitor free n busy threads"
+	=> load_balance() + worker() spawn n monitor free n busy threads"
 		
 2. SafeQueue.h + SafeVector.h 
 	=> atomic
 	=> cleaner code with lock guard
 
-3. why detach()
+3. why detach() 
+	=> no need to write destructor to join()
+	=> no need to write a vector of std::thread
 
 functor
 	=> each thread is semaphored by function_queue.empty()
 
 
 */
-#include <functional>
-#include "thread-pool.h"
+#include "thread-pool2.h"
 
 using namespace std;
 
 ThreadPool::ThreadPool(size_t numThreads) {	
 	workers = vector<worker_t>(numThreads);
 
-	available_threads.reset(new semaphore(numThreads)); 
-	functions_queue_sem.reset(new semaphore(0)); 
-	wait_semaphore.reset(new semaphore(0));
+	max_allowed_sema.reset(new semaphore(numThreads)); 	
+	tasks_sema.reset(new semaphore(0));
 
-	all_finished = 0;
 	num_active_threads = 0;
-	
+
+
+	for (size_t workerID = 0; workerID < numThreads; workerID++) {
+		workers[workerID].ready_to_exec.reset(new semaphore(0)); 		
+		workers[workerID].thunk = NULL;
+	}	
+
 	thread dt([this]() -> void { 
-		this->dispatcher();
+		this->load_balance();
 	});
 	dt.detach();
 	
-	
-	for (size_t workerID = 0; workerID < numThreads; workerID++) {
-		workers[workerID].ready_to_exec.reset(new semaphore(0)); 
-		workers[workerID].available = false;
-		workers[workerID].thunk = NULL;
-	}
+
 }
 
-/* schedule -> queue up thunk semaphore way + signal functions_queue_semaphore */
-// append the provided function pointer to the end of the queue of function pointers
-// const function<void(void)>& thunk -> C++11 way to type a function pointer 
-// that can be invoked without any arguments
-
-// workers.schedule([this,p]{handler.ServiceRequest(p)})
-/*
-https://stackoverflow.com/questions/20353210/usage-and-syntax-of-stdfunction
-function<void(void)> => <void> == return void, () == take void as argument
-
-*/
 void ThreadPool::enqueue(const std::function<void(void)>& thunk) {
-	all_finished++; 
-	f_queue_lock.lock(); // 1st time appear not in Threadpool
-	functions_queue.push(thunk); // append function point to queue
-	f_queue_lock.unlock();
 	
-	 
-	// once dispatcher notified schedule return right away => you sure ??s
-	// so more functions can be scheduled
-	functions_queue_sem->signal();
+	tasks_lock.lock();
+	tasks.push(thunk);
+	tasks_lock.unlock();
+		 
+	// TODO: change this to notify_one()
+	tasks_sema->signal();
 }
 
+void ThreadPool::load_balance() {
+	while (true) {
 
-// wait until all requests threaded serviceRequest() finishes => return
-void ThreadPool::wait() {
-	wait_semaphore->wait();
-	return;
-}
+		// wait for function attached
+		tasks_sema->wait();		
+		// max threads allowed(loop to get threads) 
+		max_allowed_sema->wait();		
 
-
-void ThreadPool::dispatcher() {		
-	
-	while (!function_queue.empty()) {		
-
-		// => delete since whether thread shd run depends on function_queue
-		// max threads allowed(loop to get threads)
-		// functions_queue_sem->wait(); 
-		
-		// 
-		available_threads->wait(); 
-		
-
-		workers_lock.lock(); 
-		bool found = false; // true if num_active_threads >0 && workers[i].available
-
-		if (num_active_threads == numThreads) continue;
-
-		// if no existing thread, spawn new slave thread
-		if(free_threads.empty()){
+		// if no free thread, spawn new worker thread
+		if(free_threads.empty()){			
 			
-			f_queue_lock.lock(); 			
-			workers[num_active_threads].thunk = functions_queue.front();
-			functions_queue.pop();
-			f_queue_lock.unlock();
-			
-			/* signal worker thread to execute it => same as above */
-			// this should be after creating new thread ??
-			workers[num_active_threads].ready_to_exec->signal();			
+			tasks_lock.lock(); // protect tasks, no enqueue when send to thread
+			workers[num_active_threads].thunk = tasks.front();
+			tasks.pop();			
+			tasks_lock.unlock();
 
-			/* spawn new slave thread */			
-			thread wt([this](size_t num_active_threads) -> void {
+			std::thread wt([this](size_t num_active_threads) -> void {
 				this->worker(num_active_threads);
-			}, num_active_threads);
-			wt.detach(); // worker thread will live forever since while(true) + no waiting/thread.join here
-			cout << "F" << endl;
+			}, num_active_threads); // std:bind ??
+			wt.detach();
 			
-			// num_active_threads_lock.lock();
+			workers[num_active_threads].ready_to_exec->signal();
 			num_active_threads++; 
 
 		// if yes existing thread
 		}else{
-			free_threads_lock.lock()
-			int id = free_threads.pop();
-			free_threads_lock.unlock()
+			free_threads_lock.lock();
+			int id = free_threads.front();
+			free_threads.pop();
+			free_threads_lock.unlock();
 
-			f_queue_lock.lock(); // ?? double lock necessary => YES, COMPETE W schedule(), functions_queue is available to public through schedule()
-			/* dequeue the least recently scheduled function */
-			workers[id].thunk = functions_queue.front();
-			functions_queue.pop();
-			f_queue_lock.unlock();
-			
-			/* signal worker thread to execute it => same as below */
+			tasks_lock.lock();			
+			workers[id].thunk = tasks.front();	
+			tasks.pop();		
+			tasks_lock.unlock();						
 			workers[id].ready_to_exec->signal();
-
-		}
-
-		workers_lock.unlock();
-		
+		}		
 	}
 }
 
@@ -148,41 +106,30 @@ void ThreadPool::dispatcher() {
 THREAD WILL NOT DIE, IT WILL JUST WAIT TO BE REUSED AFTER ONE LOOP
 MULTI-THREADED FUNCTION
 
-worker == functor
-its predicator == dispatcher's signal, not empty(), not == 1
+worker == functor == web server logic(thunk())
+its predicator == load_balance's signal, not empty(), not == 1
 */
 void ThreadPool::worker(size_t id) {
-	while (true) {
-
-		// ?? why copy + why lock	
-		workers_lock.lock(); 				
-		unique_ptr<semaphore>& sem_copy = workers[id].ready_to_exec; 
-		workers_lock.unlock();		
-		sem_copy->wait(); // ready_to_exec signal from dispatcher()
+	while (true) {			
+		workers[id].ready_to_exec->wait();
+						
+		/* NOT LOCKED!!!!! OTHERWISE NOT MULTI-THREADING */		
+		workers[id].thunk(); 		
+		
+		// usleep(5000000); // 5 secs
 				
-		/* EXECUTE serviceRequest() + NOT LOCKED!!!!! OTHERWISE NOT MULTI-THREADING */
-		
-		workers[id].thunk(); 
-		cout << id << endl;
-
-		/* DISPATCHER THREAD COMPETES WTIH WORKER THREAD */
-
-		usleep(5000000); // 10 secs
-		workers_lock.lock();
-		workers[id].available = true; // mark itself available so that could be selected and discovered 
 		workers[id].thunk = NULL;
-		workers_lock.unlock();		
-
-		free_threads.lock();
-		free_threads.push_back(id);
-		free_threads.unlock();
-
-		available_threads->signal();
 		
-		
-		// signal all requests have been dealt by worker threads
-		all_finished--;
-		if (all_finished == 0) wait_semaphore->signal(); 
+		free_threads_lock.lock();
+		free_threads.push(id);
+		free_threads_lock.unlock();
+
+		max_allowed_sema->signal();									
 	}
 }
+
+// ThreadPool::~ThreadPool(){    
+//     for(std::thread &worker_thread: worker_threads)
+//         worker_thread.join();
+// }
 

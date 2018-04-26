@@ -13,45 +13,48 @@
 #include "semaphore.h" 
 #include <algorithm>
 #include <iomanip>
-#include <atomic>
+#include <atomic> // atomic<int>
 #include <iostream>
-using namespace std;
-
 
 class ThreadPool {
  public:
  	ThreadPool(size_t numThreads);
- 	void schedule(const std::function<void(void)>& thunk);
- 	void wait();
+ 	void enqueue(const std::function<void(void)>& thunk);
+ 	// void wait();
+	// ~ThreadPool();
  	
  private:
+ 	// load_balance communicate with workers
  	struct worker_t{		
 		unique_ptr<semaphore> ready_to_exec;
 		function<void(void)> thunk;
 	}typedef worker_t;
 
-	mutex num_active_threads_lock;
+	std::vector<worker_t> workers; // single thread access
+	
 	mutex workers_lock;
-	mutex f_queue_lock;
+	mutex tasks_lock;
 	mutex free_threads_lock;
+	
+	size_t num_active_threads; // single thread access
+	// TODO: all_finished
 
-	atomic_int all_finished;
-	size_t num_active_threads;
-
- 	unique_ptr<semaphore> available_threads;
- 	unique_ptr<semaphore> functions_queue_sem;
- 	unique_ptr<semaphore> wait_semaphore;
- 	
+ 	unique_ptr<semaphore> max_allowed_sema;
+ 	unique_ptr<semaphore> tasks_sema;
+ 	 	  	 	 
+ 	// for destructor to call join()
+ 	std::vector<std::thread> worker_threads;
+ 	// DDOS if queue full, drop request/function
  	// queue_ts + vector_ts => atomic/thread safe
- 	vector<worker_t> workers;
- 	queue<function<void(void)> > functions_queue;
+ 	queue<function<void(void)> > tasks;
  	queue<int> free_threads;
  	
- 	void dispatcher();
+ 	void load_balance();
  	void worker(size_t id);
 
-  ThreadPool(const ThreadPool& original) = delete;
-  ThreadPool& operator=(const ThreadPool& rhs) = delete;
+  // prohibit copying
+  // ThreadPool(const ThreadPool& original) = delete;
+  // ThreadPool& operator=(const ThreadPool& rhs) = delete;
 };
 
 #endif
