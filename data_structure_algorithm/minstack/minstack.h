@@ -4,6 +4,10 @@ Author: steven wong
 stack(linked list implmentation) min()/max() take O(n)
 	=> min() O(1)
 
+SOLUTION:
+	1. add min field in node
+	2. two stacks, one normal, one only store min to the underneath
+
 NOTE:
 	1. min range / min of all nodes underneath: 
 

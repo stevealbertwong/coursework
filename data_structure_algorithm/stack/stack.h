@@ -14,7 +14,7 @@ struct node
 class Stack
 {
 public:
-	Stack(){};
+	Stack() : head(nullptr) {};
 	~Stack(){};
 	void push(int data);
 	void pop();
