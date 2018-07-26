@@ -1,5 +1,10 @@
 /*
 http://en.cppreference.com/w/cpp/language/move_constructor
+
+A move constructor of class T is a non-template constructor 
+whose first parameter is T&&, const T&&, volatile T&&, 
+or const volatile T&&
+
 */
 #include <string>
 #include <iostream>
@@ -11,7 +16,9 @@ struct A
     std::string s;
     A() : s("test") { }
     A(const A& o) : s(o.s) { std::cout << "move failed!\n"; }
-    A(A&& o) noexcept : s(std::move(o.s)) { }
+    
+    // move constructor
+    A(A&& o) noexcept : s(std::move(o.s)) { } 
 };
  
 A f(A a)

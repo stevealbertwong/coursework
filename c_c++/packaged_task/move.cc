@@ -65,7 +65,6 @@ int square(const int& x) {return x*x;} //both square(i) square(40) work
 /*
 https://www.youtube.com/watch?v=IOkgBrXCtfo
 
-
 packaged_task + thread
 e.g. std::thread t2 = move(t);
 
@@ -103,7 +102,5 @@ int main(){
 	foo(bv); // copy constructor called, MOST EXPENSIVE
 	foo(createBoVector()); // move constructor called
 	foo(std::move(bv)); // move constructor called, bv not usable as nullptr, SECOND MOST EFFICIENT
-
-
 }
 

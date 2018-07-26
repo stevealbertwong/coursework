@@ -1,0 +1,16 @@
+# -*- MakeFile -*-
+
+# target : dependencies
+#	command
+
+CXX= g++
+CFLAGS= -O3 -Wall -g
+LDFLAGS = -lm -pthread -lthreads -lrand
+SOURCES = pg-mutex.cc
+EXEC=pg-mutex
+
+# if you just write this then call make => cc pg-pthread.c -o pg-pthread
+# all: $(SOURCES)
+
+pg-mutex: $(SOURCES)
+	$(CXX) $(CFLAGS) $(SOURCES) -o $(EXEC)

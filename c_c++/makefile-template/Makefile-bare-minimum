@@ -1,0 +1,7 @@
+# -*- MakeFile -*-
+
+# target : dependencies
+#	command
+
+# if you just write this then call make => cc pg-pthread.c -o pg-pthread
+all: pg-pthread

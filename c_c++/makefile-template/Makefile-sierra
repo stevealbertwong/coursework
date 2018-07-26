@@ -1,0 +1,38 @@
+# -*- MakeFile -*-
+CC=clang
+
+# The CFLAGS variable sets compile flags for g++:
+#  -g          compile with debug information
+#  -Wall       give all diagnostic warnings
+#  -pedantic   require compliance with ANSI standard
+#  -O0         do not optimize generated code
+#  -std=gnu99  go with the C99 standard
+CFLAGS= -O3 -Wall -g
+OFLAGS= -O3 -Wall -g -c
+
+
+# The LDFLAGS variable sets flags for linker
+#  -lpthread link in libpthread (thread library)
+#  -lpthread link in libpthread (thread library) to back C++11 extensions
+LDFLAGS = -lgsl -lm -lgslcblas -lpthread -lrand -pthread -lthreads -L/usr/class/cs110/local/lib/ 
+
+EXEC=geom 
+LHEADER= getdouble.h
+LSOURCE= getdouble.c geom.c
+LOBJECTS= getdouble.o geom.o
+
+all: $(EXEC)
+
+geom: $(LOBJECTS) $(LHEADER)
+	$(CC) $(CFLAGS) $(LOBJECTS) -o $(EXEC) $(LDFLAGS)
+
+getdouble.o: getdouble.c
+	$(CC) $(OFLAGS) getdouble.c	
+
+geom.o: geom.c getdouble.h
+	$(CC) $(OFLAGS) geom.c
+
+clean:	
+	rm -f $(EXEC)
+	rm -rf *.dSYM
+	rm -f *.o 

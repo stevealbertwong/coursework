@@ -31,18 +31,19 @@ public:
 		m_buffer[m_size] = 0; // null terminate
 	};
 	
-	// overload copy constructor => deep copy => as vanilia assignment operator creates shallow copy i.e. same ptr
+	// overload copy constructor => deep copy => 
+	// as vanilia assignment operator creates shallow copy i.e. same ptr
 	String(const String& str_class){
 		m_size = str_class.m_size;
 		m_buffer = new char[m_size];
 		memcpy(m_buffer, str_class.m_buffer, m_size);
 	}
 
-
 	// overload assignment operator 
 	String& operator=(const String& str){ // &: pass by ref
 		
-		// check self assignment by comparing addr
+		// check self assignment by comparing addr i.e. str1 = str1
+		// this == lhs's address
 		if(this == &str){ // &: addr of real param(not copy)
 			return *this; // deref as return real object not addr
 		}
@@ -58,13 +59,11 @@ public:
 	char& operator[](const unsigned int& index){
 		return m_buffer[index];
 	}
-
 	// << operator overloading
 	// friend so that defintion outside class could access m_buffer
 	friend std::ostream& operator<<(std::ostream & stream, const String& str);
 	// friend String& operator=(const String& str);
 
-	
 	~String(){ delete[] m_buffer; }; // crash if free twice i.e. if shallow copy same ptr
 
 private:
@@ -84,13 +83,7 @@ int main(int argc, char const *argv[])
 	String str = "steven"; // constructor invoked
 	String str2 = str; // copy constructor invoked
 	str[2] = 'a'; // overloaded [] operator invoked
-	std::cout << str << std::endl;
-	
-	std::cout << str2 << std::endl;
-
 	String str3 = "leigh";
-	str3 = str; // overloaded assignment operator invoked
-	std::cout << str3 << std::endl;
-
+	str3 = str; // overloaded assignment operator invoked	
 	return 0;
 }

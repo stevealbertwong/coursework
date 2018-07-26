@@ -114,6 +114,10 @@ void load_skipwhitespace_streamop_array(std::string filename){
   cout << myArray;
 }
 
+/************************************************************************/
+// ENTIRETY
+//
+/************************************************************************/
 /*
 std::istreambuf_iterator iterator is input iterator that read successive elements from a stream buffer.
 std::istreambuf_iterator<char>(in) will create iterator for our ifstream in (beginning of the file), 
@@ -125,7 +129,7 @@ keep line breaker and white space, read entirety
 c_str() returns const char *
 */
 
-void load_entirety_stream_array(std::string filename){
+void load_entirety_strcpy_chararray(std::string filename){
   ifstream in(filename);  
   
   std::string contents((std::istreambuf_iterator<char>(in)), 
@@ -151,7 +155,7 @@ if (!file.eof() && !file.fail())
 vector by default construct on heap
 */
 
-void load_entirety_buffer_vector(std::string filename){
+void load_entirety_chararray_read_vector(std::string filename){
   std::vector<char> vec;
   std::ifstream file(filename);
   // assert(file.is_open());
@@ -164,7 +168,7 @@ void load_entirety_buffer_vector(std::string filename){
   cout << vec;
 }
 
-void load_entirety_stream_vector(std::string filename){  
+void load_entirety_istreamiter_string_vector(std::string filename){  
   std::ifstream in(filename);
 
   istream_iterator<char> data(in);
@@ -179,7 +183,7 @@ void load_entirety_stream_vector(std::string filename){
   cout << vec;
 }
 
-void read_int(){
+void load_entirety_istreamiter_copy_backinserter_vector(){
   
   ifstream is("int.txt",ios::in);  
 
@@ -255,10 +259,10 @@ void free_entirety(){
 /*==================================================================*/
 int main () 
 {
-  // load_entirety_stream_vector(FILE_NAME);
-  // write_entirety_streamiter_vector();
+  
+  
   write_int_vector();
-  read_int();
+
 
 
 
