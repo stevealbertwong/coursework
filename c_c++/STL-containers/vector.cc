@@ -3,6 +3,8 @@ http://www.cplusplus.com/reference/vector/vector/vector/
 https://stackoverflow.com/questions/2236197/what-is-the-easiest-way-to-initialize-a-stdvector-with-hardcoded-elements
 
 https://www.geeksforgeeks.org/initialize-a-vector-in-cpp-different-ways/
+
+vector of struct* ??
 */
 
 // constructing vectors

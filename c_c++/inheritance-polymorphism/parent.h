@@ -8,13 +8,14 @@
 using namespace std;
 
 class Parent{
-	// public: visible to main, other class
+	// public: accessible by other class
 	public:
 		void setParentProtectedVariable(int a, int b);
 		
-		// virtual => child to overwrite
-		// setParentPublicVariable() has to be same as children n take parameters
-		virtual void setParentPublicVariable(string c); // overriden by subclass
+		// virtual => child COULD overwrite or just call this original function
+		// pure virtual e.g. virtual func()=0 -> child MUST override
+		// child's setParentPublicVariable() MUST be same as parent i.e. take string c as parameter
+		virtual void setParentPublicVariable(string c); 
 		virtual void setName(); // not overriden
 
 		string color;
@@ -27,14 +28,14 @@ class Parent{
 		int getPrivate() const {return this->private_var;}
 
 
-	// protected: visible to child class 
+	// protected: accessible by child class 
 	protected:
 		int height;
 		int width;
 		int protected_var = 5;
 		void protected_func() {cout << "parent's protected_func" << endl;}
 
-	// private: visible to parent.cpp
+	// private: accessible only by parent.cpp
 	private:	
 
 		int private_var = 10;		

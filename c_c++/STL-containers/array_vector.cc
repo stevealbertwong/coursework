@@ -55,7 +55,7 @@ void arr2vec_copy(){
 /*
 http://www.cplusplus.com/forum/general/62900/
 */
-void arr2vec3(){
+void arr2vec_insert(){
 	float data_f[10] = { 1.1 ,  1.2 , 1.3 , 1.4 , 1.5 , 1.6 , 1.7 , 1.8 , 1.9 , 1.0 } ; 
 	vector<float> float_vect; 
 	float_vect.insert( float_vect.being() , data_f , data_f + 10 ) ; 
@@ -73,7 +73,7 @@ void vec2arr_vector_pointer(){
 	vector<unsigned char>::pointer p = &v[0];
 	// compatible, identical types - defined as 'Pointer to T'
 	unsigned char* aByteArray = p; 
-	unsigned char* p2 = v.data();
+	unsigned char* p2 = v.data(); // data() return head of linked list
 	std::cout << p2[2] << std::endl;
 }
 

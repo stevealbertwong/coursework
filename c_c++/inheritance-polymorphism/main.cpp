@@ -1,11 +1,9 @@
 /*
-
 newboston
 https://www.youtube.com/watch?v=lX09jBr9I1s
 
 bo qian
 https://www.youtube.com/watch?v=EYuPBkgJtCQ
-
 
 // other source files before main.cpp
 g++ -std=c++11 -o main main.cpp parent.cpp child.cpp
@@ -47,7 +45,7 @@ int main()
 	
 
 
-	// polymorphism => parent class pointer to subclass could indirectly change its variables
+	// polymorphism -> parent class pointer to subclass could indirectly change its variables
 	Parent *pa = &ch;
 	pa->setParentProtectedVariable(10, 20);
 
