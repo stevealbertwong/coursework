@@ -47,53 +47,14 @@ void print_unordered_map(const unordered_map<char, string>& m){
 		// cout << *itr << endl;
 		cout << itr->first << endl; // w
 		cout << itr->second << endl; // wednesday
-	}	
-}
+}}
 
 int main(int argc, char const *argv[])
-{	
-
-	// unordered set
-	unordered_set<string> myset = { "red", "green", "blue" };
-
-	// if find() find item, return iter points to that item
-	// else, return iterator points to end of container
-	// O(1) amortised constant time look up
-	unordered_set<string>::const_iterator itr = myset.find("green");
-
-	// dereferencing end iterator is undefined behavior
-	if(itr!=myset.end()){
-		cout << *itr << endl;
-	}
-
-	myset.insert("yellow"); // O(1)
-
-	// insert every item in vector into the set
-	vector<string> vec = {"purple", "pink"};
-	myset.insert(vec.begin(), vec.end());
-	
-	unordered_set<string> :: iterator itr2;   
-    for (itr2 = myset.begin(); itr2 != myset.end(); itr2++)
-        cout << *itr2 << endl;
-
-	// hash table specific api
-	// load factor(ratio of total elements and buckets) of hash table =>  0.545455
-	cout << "load_factor = " << myset.load_factor() << endl;
-	
-	string x = "red";
-	cout << x << " is in bucket #" << myset.bucket(x) << endl;
-	cout << "total bucket #" << myset.bucket_count() << endl;
-
-
-
-
-
-
-
+{		
 	// unordered map aka associative array
 	unordered_map<char,string> day = {{'m',"monday"},{'t',"tuesday"}};
-	cout << day['m'] << endl; // no range check
-	cout << day.at('m') << endl; // has range check
+	cout << day['m'] << endl; // no range check -> monday 
+	cout << day.at('m') << endl; // has range check -> monday 
 	
 	// insert in 2 ways
 	day['w'] = "wednesday"; // same as insert()
@@ -107,6 +68,39 @@ int main(int argc, char const *argv[])
 	cout << day['m'] << endl; // mondayyyyyyy
 	
 	print_unordered_map(day);
+
+
+	/*********************************************************************************/
+
+	unordered_set<string> myset = { "red", "green", "blue" };
+
+	// if find() find item, return iter points to that item
+	// else, return iterator points to end of container	
+	unordered_set<string>::const_iterator itr = myset.find("green"); // O(1)
+	
+	if(itr!=myset.end()){ // dereferencing end iterator is undefined behavior
+		cout << *itr << endl;}
+
+	myset.insert("yellow"); // O(1)
+	
+	vector<string> vec = {"purple", "pink"}; // insert vector into the set
+	myset.insert(vec.begin(), vec.end());
+	
+	unordered_set<string> :: iterator itr2;   
+    for (itr2 = myset.begin(); itr2 != myset.end(); itr2++)
+        cout << *itr2 << endl;
+	
+	// load factor(ratio of total elements and buckets) of hash table =>  0.545455
+	cout << "load_factor = " << myset.load_factor() << endl;
+	
+	string x = "red";
+	cout << x << " is in bucket #" << myset.bucket(x) << endl;
+	cout << "total bucket #" << myset.bucket_count() << endl;
+
+
+	
+	/*********************************************************************************/
+
 
 
 

@@ -1,13 +1,10 @@
 /*
-Binary Heap:
-i.e. always sorted binary tree
-
+Binary Heap -> always sorted binary tree
 
 binary/max/min heap is a sorted(swapped) array	
 	=> pop(): swap w last node n bubble down
 	=> could function as priority queue
     => HEAP IS NOT A TREE since NOT DIRECTED, IMPLEMENTED IN LINKED NODES
-
 
 Arr[(i-1)/2]	Returns the parent node (if odd, de)
 Arr[(2*i)+1]	Returns the left child node
@@ -18,21 +15,19 @@ https://www.geeksforgeeks.org/binary-heap/
 g++ 
 */
 
-
 #include <iostream>
 #include <climits>
 using namespace std;
+
+void swap(int *x, int *y); // prototype -> alternative to private method
  
-// Prototype of a utility function to swap two integers
-void swap(int *x, int *y);
- 
-class MinHeap
-{
+class MinHeap{
     int *harr; // pointer to array head of elements in heap
     int capacity; // maximum possible size of min heap
     int heap_size; // Current number of elements in min heap
-public:
-    // Constructor
+    void swap(int *x, int *y);
+
+public:    
     MinHeap(int capacity);
  
     // to heapify a subtree with root at given index
@@ -42,41 +37,41 @@ public:
     int parent(int i) { return (i-1)/2; }
  
     // to get index of left child of node at index i
-    int left(int i) { return (2*i + 1); }
- 
-    // to get index of right child of node at index i
-    int right(int i) { return (2*i + 2); }
- 
-    // to extract the root which is the minimum element
-    int extractMin();
- 
-    // Decreases key value of key at index i to new_val
-    void decreaseKey(int i, int new_val);
- 
-    // Returns the minimum key (key at root) from min heap
-    int getMin() { return harr[0]; }
- 
-    // Deletes a key stored at index i
-    void deleteKey(int i);
- 
-    // Inserts a new key 'k'
-    void insertKey(int k);
+    int left(int i) { return (2*i + 1); }    
+    int right(int i) { return (2*i + 2); }    
+    int extractMin(); // get root == min    
+    void decreaseKey(int i, int new_val); // "key" value to new_val
+    int getMin() { return harr[0]; } // returns the min key (root)    
+    void deleteKey(int i); // Deletes a key stored at index i    
+    void insertKey(int k);  // Inserts a new key 'k'
     void bubbleUp(int i);
 };
  
 // Constructor: Builds a heap from a given array a[] of given size
-MinHeap::MinHeap(int cap)
-{
+MinHeap::MinHeap(int cap){
     heap_size = 0;
     capacity = cap;
     harr = new int[cap];
 }
+
+// swap two int array elements
+void MinHeap::swap(int *x, int *y){
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void MinHeap::bubbleUp(int i){
+    if(i != 0 && harr[parent(i)] > harr[i]){
+       swap(&harr[i], &harr[parent(i)]);
+       i = parent(i);
+       bubbleUp(i); // recursion
+    }   
+}
  
 // TODO turn while loop into recursion
-void MinHeap::insertKey(int k)
-{
-    if (heap_size == capacity)
-    {
+void MinHeap::insertKey(int k){
+    if (heap_size == capacity){
         cout << "\nOverflow: Could not insertKey\n";
         return;
     }
@@ -94,16 +89,6 @@ void MinHeap::insertKey(int k)
     // }
 
     bubbleUp(i);
-}
-
-// recursion
-void MinHeap::bubbleUp(int i){
-    if(i != 0 && harr[parent(i)] > harr[i])
-    {
-       swap(&harr[i], &harr[parent(i)]);
-       i = parent(i);
-       bubbleUp(i);
-    }   
 }
 
 // Decreases priority 
@@ -199,14 +184,6 @@ void MinHeap::Heapify_Iteration(int i)
 
 	    i = smallest;
 	}
-}
- 
-// swap two int array elements
-void swap(int *x, int *y)
-{
-    int temp = *x;
-    *x = *y;
-    *y = temp;
 }
  
 // Driver program to test above functions

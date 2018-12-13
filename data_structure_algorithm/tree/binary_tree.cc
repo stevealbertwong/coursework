@@ -1,6 +1,6 @@
 /*
 
-linked list w 2 next ptrs
+linked list of struct w 2 left n right pointers
 
 https://gist.github.com/toboqus/def6a6915e4abd66e922
 
@@ -9,9 +9,7 @@ https://www.cs.cmu.edu/~adamchik/15-121/lectures/Trees/trees.html
 */
 
 #include <iostream>
-
 using namespace std;
-
 
 struct node{
 	int value;
@@ -84,7 +82,6 @@ void btree::insert(int key, node *leaf){
 			leaf->right->left = NULL;
 		}
 	}
-
 }
 
 void btree::insert(int key){
